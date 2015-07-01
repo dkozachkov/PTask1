@@ -12,6 +12,7 @@ namespace PTask1
         private double b;
         private Func<double, double> f;
         private double eps;
+        private List<double[]> points;
 
         public HalfSearch(Func<double, double> fu = null, double a = -1, double b = 1, double eps = 0.01)
         {
@@ -20,7 +21,15 @@ namespace PTask1
             f = fu; //предполагается, что функция корректная, то есть унимодальная.
             if (fu == null) f = EqualFunc;
             this.eps = eps;
+            points=new List<double[]>();
         }
+
+        /// <summary>
+        /// Возвращает точки для всех проведенных итераций.
+        /// </summary>
+        /// <returns></returns>
+        public List<double[]> IterationPoints()
+        { return points; }
 
         public double MinPointSearch()
         {
@@ -29,6 +38,7 @@ namespace PTask1
             {
                 double x1 = 0.25 * (b + a);
                 double x3 = 0.75 * (b + a);
+                points.Add(new double[] { x1, x2, x3 });
                 if (f(x1) < f(x2))
                 {
                     b = x2;
