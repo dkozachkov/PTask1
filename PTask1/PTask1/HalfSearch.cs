@@ -33,11 +33,11 @@ namespace PTask1
 
         public double MinPointSearch()
         {
-            double x2 = 0.5 * (b + a);
+            double x2 = a+0.5 * (b - a);
             do
             {
-                double x1 = 0.25 * (b + a);
-                double x3 = 0.75 * (b + a);
+                double x1 = a+0.25 * (b - a);
+                double x3 = a+0.75 * (b - a);
                 points.Add(new double[] { x1, x2, x3 });
                 if (f(x1) < f(x2))
                 {
