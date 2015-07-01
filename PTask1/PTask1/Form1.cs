@@ -24,6 +24,10 @@ namespace PTask1
         private Button Execute;
         private List<double[]> iterPoints;
 
+        private Button Draw;
+        private PictureBox img;
+        private Func<double, double> f;
+
         public Form1()
         {
             InitializeComponent();
@@ -124,7 +128,25 @@ namespace PTask1
             Ans.Height = Execute.Height;
             Ans.TextAlign = ContentAlignment.MiddleCenter;
 
-            this.Size = new Size(640, 330);
+            img = new PictureBox();
+            Controls.Add(img);
+            img.BorderStyle = BorderStyle.FixedSingle;
+            img.Left = Q1.Right + 20;
+            img.Width = this.Right;
+            img.Top = Q1.Top;
+            img.Height = this.Height - 30;
+
+            Draw = new Button();
+            Controls.Add(Draw);
+            Draw.BringToFront();
+            Draw.Text = "Draw";
+            Draw.Padding = new Padding(5, 5, 5, 5);
+            Draw.AutoSize = true;
+            Draw.Left = img.Left + img.Width / 2 - Draw.Width / 2;
+            Draw.Top = img.Top + img.Height/2 - Draw.Height/2;
+            Draw.Enabled = false;
+            Draw.MouseClick += SetGraphics;
+            this.Size = new Size(590, 330);
             this.Text = "Минимизация одномерной функции: метод деления пополам";
         }
 
@@ -147,15 +169,77 @@ namespace PTask1
                 List<double> fpars=new List<double>();
                 foreach (string s in pars)
                     fpars.Add(Convert.ToDouble(s));
+                f = new FuncSelector().FuncReturner(type, fpars);
                 double a = Convert.ToDouble(basepars[0].Text);
                 double b = Convert.ToDouble(basepars[1].Text);
                 double eps = Convert.ToDouble(basepars[2].Text);
-                HalfSearch hs = new HalfSearch(new FuncSelector().FuncReturner(type, fpars), a, b, eps);
+                HalfSearch hs = new HalfSearch(f, a, b, eps);
                 double res=hs.MinPointSearch();
+                iterPoints = hs.IterationPoints();
                 Ans.Text = Ans.Text + ": x=" + res;
+                Draw.Enabled = true;
+                Draw.Visible = true;
             }
             catch { return; }
+        }
 
+        private void SetGraphics(object o, EventArgs ea)
+        {
+            Draw.Enabled = false;
+            Draw.Visible = false;
+            double a = Convert.ToDouble(basepars[0].Text);
+            double b = Convert.ToDouble(basepars[1].Text);
+            double eps = Convert.ToDouble(basepars[2].Text);
+            double fmax=Math.Max(f(a),f(b));
+            double fmin=f(iterPoints[iterPoints.Count-1][1]);
+
+            Graphics g = img.CreateGraphics();
+            int zerox, zeroy;
+            if (fmin >= 0)
+            {
+                g.DrawLine(new Pen(Color.Black), 20, 250, 280, 250);
+                zeroy = 250;
+            }
+            else if (fmax <= 0)
+            {
+                zeroy = 20;
+                g.DrawLine(new Pen(Color.Black), 20, 20, 280, 20);
+            }
+            else
+            {
+                zeroy=20 +(int)Math.Round(230 * fmax / (fmax - fmin));
+                g.DrawLine(new Pen(Color.Black), 20, zeroy, 280,zeroy);
+            }
+            if (a >= 0)
+            {
+                zerox = 20;
+                g.DrawLine(new Pen(Color.Black), 20, 20, 20, 260);
+            }
+            else if (b <= 0)
+            {
+                zerox = 270;
+                g.DrawLine(new Pen(Color.Black), 270, 20, 270, 260);
+            }
+            else
+            {
+                zerox = (int)Math.Round(20 - a / (b - a) * 250);
+                g.DrawLine(new Pen(Color.Black), zerox, 20, zerox, 260);
+            }
+            g.DrawEllipse(new Pen(Color.Black),zerox-2,zeroy-2,4,4);
+            g.DrawLines(new Pen(Color.Black), new Point[] { new Point(zerox - 3, 25), new Point(zerox, 20), new Point(zerox + 3, 25) });
+            g.DrawLines(new Pen(Color.Black), new Point[] { new Point(275, zeroy - 3), new Point(280, zeroy), new Point(275, zeroy + 3) });
+            //20-250 
+            double step=(b-a)/eps*2;
+            double k1=260/(b-a),k2=250/(fmax-fmin);
+            //double[][] x_y=new double[2][];
+            //x_y[0]=new double[(int)step];
+            //x_y[1]=new double[x_y[0].Length];
+            List<Point>pts=new List<Point>();
+            for(double i=a;i<=b;i+=step)
+            {
+                Point pt=new Point((int)Math.Round(i),(int)Math.Round(f(i)));
+            }
+            
         }
     }
 }
