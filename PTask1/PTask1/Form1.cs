@@ -26,6 +26,7 @@ namespace PTask1
         private List<double[]> iterPoints;
 
         private Button Draw;
+        private Label ImgDescr;
         private PictureBox img;
         private Func<double, double> f;
 
@@ -146,9 +147,9 @@ namespace PTask1
             Controls.Add(img);
             img.BorderStyle = BorderStyle.FixedSingle;
             img.Left = Q1.Right + 20;
-            img.Width = this.Right;
+            img.Width = 300;
             img.Top = Q1.Top;
-            img.Height = this.Height - 30;
+            img.Height = 270;
 
             Draw = new Button();
             Controls.Add(Draw);
@@ -156,10 +157,25 @@ namespace PTask1
             Draw.Text = "Draw";
             Draw.Padding = new Padding(5, 5, 5, 5);
             Draw.AutoSize = true;
-            Draw.Left = img.Left + img.Width / 2 - Draw.Width / 2;
+            Draw.Left = img.Left;
             Draw.Top = img.Bottom+5;
             Draw.Enabled = false;
             Draw.MouseClick += SetGraphics;
+            Draw.MouseClick += IncludeDescr;
+
+            ImgDescr = new Label();
+            Controls.Add(ImgDescr);
+            ImgDescr.Text = "Красные точки - середины текущих отрезков.\nСиние точки - 1/4 и 3/4 текущего отрезка.";
+            ImgDescr.BorderStyle = BorderStyle.FixedSingle;
+            ImgDescr.Padding = new Padding(0, 0, 0, 0);
+            ImgDescr.Font = new Font("Arial", (float)6.75);
+            ImgDescr.TextAlign = ContentAlignment.TopCenter;
+            ImgDescr.Left = Draw.Right + 5;
+            ImgDescr.Top = Draw.Top;
+            ImgDescr.Width = 295 - Draw.Width;
+            ImgDescr.Height = Draw.Height;
+            ImgDescr.Hide();
+
             this.Size = new Size(590, 360);
             this.Text = "Минимизация одномерной функции: метод деления пополам";
         }
@@ -232,6 +248,12 @@ namespace PTask1
                 img.SendToBack();
             }
             catch { return; }
+        }
+
+        private void IncludeDescr(object o, EventArgs ea)
+        {
+            ImgDescr.Show();
+            img.BringToFront();
         }
 
         private void SetGraphics(object o, EventArgs ea)
@@ -331,10 +353,12 @@ namespace PTask1
                 t = t + 22;
                 m++;
             }
+            //Построение графика функции.
             int p_a = PixelFromCoord("x", a, k1);
             int p_b = PixelFromCoord("x", b, k1);
             int p_fa=PixelFromCoord("y",f(a),k2);
-
+            g.DrawEllipse(new Pen(Color.DimGray), zerox + p_a - 1, zeroy - p_fa - 1, 3, 3);
+            g.DrawLine(new Pen(Color.LightGray), zerox + p_a, zeroy - p_fa, zerox + p_a, zeroy);
             for (int i = p_a+1; i <= p_b; i++)
             {
                 double newx=CoordForPixel("x",i,k1);
@@ -343,15 +367,31 @@ namespace PTask1
                 g.DrawLine(new Pen(Color.DarkGray),zerox+i-1,zeroy-p_fa,zerox+i,zeroy-p_f2);
                 p_fa = p_f2;
             }
-            //double[][] x_y=new double[2][];
-            //x_y[0]=new double[(int)step];
-            //x_y[1]=new double[x_y[0].Length];
-            //List<Point>pts=new List<Point>();
-            //for(double i=a;i<=b;i+=step)
-            //{
-            //    Point pt=new Point((int)Math.Round(i),(int)Math.Round(f(i)));
-            //}
-            
+            g.DrawEllipse(new Pen(Color.DimGray), zerox + p_b - 1, zeroy - p_fa - 1, 3, 3);
+            g.DrawLine(new Pen(Color.LightGray), zerox + p_b, zeroy - p_fa, zerox + p_b, zeroy);
+            //Выделение точек.
+            for (int i = 0; i < iterPoints.Count; i++)
+            {
+                double x1 = iterPoints[i][0];
+                double x2 = iterPoints[i][1];
+                double x3 = iterPoints[i][2];
+
+                double y1 = f(x1);
+                double y2 = f(x2);
+                double y3 = f(x3);
+
+                int px1 = zerox + PixelFromCoord("x", x1, k1);
+                int px2 = zerox + PixelFromCoord("x", x2, k1);
+                int px3 = zerox + PixelFromCoord("x", x3, k1);
+
+                int py1 = zeroy - PixelFromCoord("y", y1, k2);
+                int py2 = zeroy - PixelFromCoord("y", y2, k2);
+                int py3 = zeroy - PixelFromCoord("y", y3, k2);
+
+                g.DrawEllipse(new Pen(Color.Blue), px1 - 2, py1 - 2, 4, 4);
+                g.DrawEllipse(new Pen(Color.Blue), px3 - 2, py3 - 2, 4, 4);
+                g.DrawEllipse(new Pen(Color.Red), px2 - 2, py2 - 2, 4, 4);
+            } 
         }
 
         private double CoordForPixel(string dir, int pix, double step)
