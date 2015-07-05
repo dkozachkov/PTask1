@@ -51,7 +51,6 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="FuncSelector.cs" />
-    <Compile Include="Graphics.cs" />
     <Compile Include="HalfSearch.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
